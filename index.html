@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>팀원 정하기 - 디스코드 테마</title>
+    <title>팀원섞기</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -92,15 +92,19 @@
         .team-slot.drag-over { background-color: rgba(88, 101, 242, 0.2); border-color: #5865F2; }
         .team-slot:hover { background-color: #35373c; }
         
-        /* 아바타 클릭 시 커서 포인터 변경 */
+        /* 인원이 찼을 때 드래그 커서 표시 */
+        .team-slot.has-value { cursor: grab; }
+        .team-slot.has-value:active { cursor: grabbing; }
+        
         .team-slot .avatar { 
             width: 24px; height: 24px; border-radius: 50%; background-color: #4e5058; 
             margin-right: 10px; flex-shrink: 0; transition: background-color 0.2s; cursor: pointer; 
         }
         .team-slot .avatar:hover { filter: brightness(1.2); }
         
+        /* 인풋 사이즈 단축 (flex-grow 제거, 고정 width 부여) */
         .slot-input {
-            flex-grow: 1; background: transparent; border: none; color: #dbdee1;
+            width: 140px; background: transparent; border: none; color: #dbdee1;
             font-size: 0.95rem; outline: none; padding: 2px 4px; border-radius: 3px; font-family: inherit;
         }
         .slot-input:focus { background-color: #1e1f22; }
@@ -152,23 +156,23 @@
             <!-- 팀 A -->
             <div class="team" id="team1">
                 <h2>팀 A</h2>
-                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 1, 0)">
+                <div class="team-slot" id="t1-container-0" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 1, 0)">
                     <div class="avatar" onclick="clearSlot(1, 0)" title="클릭 시 대기열로 복귀"></div>
                     <input type="text" class="slot-input" id="t1-s0" placeholder="비어 있음" onchange="handleSlotChange(1, 0, this.value)">
                 </div>
-                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 1, 1)">
+                <div class="team-slot" id="t1-container-1" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 1, 1)">
                     <div class="avatar" onclick="clearSlot(1, 1)" title="클릭 시 대기열로 복귀"></div>
                     <input type="text" class="slot-input" id="t1-s1" placeholder="비어 있음" onchange="handleSlotChange(1, 1, this.value)">
                 </div>
-                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 1, 2)">
+                <div class="team-slot" id="t1-container-2" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 1, 2)">
                     <div class="avatar" onclick="clearSlot(1, 2)" title="클릭 시 대기열로 복귀"></div>
                     <input type="text" class="slot-input" id="t1-s2" placeholder="비어 있음" onchange="handleSlotChange(1, 2, this.value)">
                 </div>
-                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 1, 3)">
+                <div class="team-slot" id="t1-container-3" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 1, 3)">
                     <div class="avatar" onclick="clearSlot(1, 3)" title="클릭 시 대기열로 복귀"></div>
                     <input type="text" class="slot-input" id="t1-s3" placeholder="비어 있음" onchange="handleSlotChange(1, 3, this.value)">
                 </div>
-                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 1, 4)">
+                <div class="team-slot" id="t1-container-4" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 1, 4)">
                     <div class="avatar" onclick="clearSlot(1, 4)" title="클릭 시 대기열로 복귀"></div>
                     <input type="text" class="slot-input" id="t1-s4" placeholder="비어 있음" onchange="handleSlotChange(1, 4, this.value)">
                 </div>
@@ -177,23 +181,23 @@
             <!-- 팀 B -->
             <div class="team" id="team2">
                 <h2>팀 B</h2>
-                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 2, 0)">
+                <div class="team-slot" id="t2-container-0" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 2, 0)">
                     <div class="avatar" onclick="clearSlot(2, 0)" title="클릭 시 대기열로 복귀"></div>
                     <input type="text" class="slot-input" id="t2-s0" placeholder="비어 있음" onchange="handleSlotChange(2, 0, this.value)">
                 </div>
-                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 2, 1)">
+                <div class="team-slot" id="t2-container-1" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 2, 1)">
                     <div class="avatar" onclick="clearSlot(2, 1)" title="클릭 시 대기열로 복귀"></div>
                     <input type="text" class="slot-input" id="t2-s1" placeholder="비어 있음" onchange="handleSlotChange(2, 1, this.value)">
                 </div>
-                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 2, 2)">
+                <div class="team-slot" id="t2-container-2" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 2, 2)">
                     <div class="avatar" onclick="clearSlot(2, 2)" title="클릭 시 대기열로 복귀"></div>
                     <input type="text" class="slot-input" id="t2-s2" placeholder="비어 있음" onchange="handleSlotChange(2, 2, this.value)">
                 </div>
-                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 2, 3)">
+                <div class="team-slot" id="t2-container-3" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 2, 3)">
                     <div class="avatar" onclick="clearSlot(2, 3)" title="클릭 시 대기열로 복귀"></div>
                     <input type="text" class="slot-input" id="t2-s3" placeholder="비어 있음" onchange="handleSlotChange(2, 3, this.value)">
                 </div>
-                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 2, 4)">
+                <div class="team-slot" id="t2-container-4" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 2, 4)">
                     <div class="avatar" onclick="clearSlot(2, 4)" title="클릭 시 대기열로 복귀"></div>
                     <input type="text" class="slot-input" id="t2-s4" placeholder="비어 있음" onchange="handleSlotChange(2, 4, this.value)">
                 </div>
@@ -302,13 +306,11 @@
             updateState();
         }
 
-        // 전체 선택 함수
         function selectAll() {
             members.forEach(m => m.selected = true);
             updateState();
         }
 
-        // 전체 해제 함수
         function deselectAll() {
             members.forEach(m => m.selected = false);
             updateState();
@@ -337,14 +339,27 @@
             for (let t in teams) {
                 for (let i = 0; i < 5; i++) {
                     const slotInput = document.getElementById(`t${t}-s${i}`);
-                    const slotContainer = slotInput.parentElement;
+                    const slotContainer = document.getElementById(`t${t}-container-${i}`);
                     const val = teams[t][i];
                     
                     slotInput.value = val;
+
+                    // 인원이 있을 경우에만 컨테이너를 드래그 가능하게 설정
                     if (val !== "") {
                         slotContainer.classList.add('has-value');
+                        slotContainer.draggable = true;
+                        
+                        slotContainer.ondragstart = (e) => {
+                            // 입력 필드의 텍스트가 드래그되는 것을 방지하고, 슬롯 전체의 데이터를 전송
+                            e.dataTransfer.setData("type", "slot");
+                            e.dataTransfer.setData("sourceTeam", t);
+                            e.dataTransfer.setData("sourceIndex", i);
+                            e.dataTransfer.setData("name", val);
+                        };
                     } else {
                         slotContainer.classList.remove('has-value');
+                        slotContainer.draggable = false;
+                        slotContainer.ondragstart = null;
                     }
                 }
             }
@@ -440,6 +455,7 @@
             const type = ev.dataTransfer.getData("type");
             const name = ev.dataTransfer.getData("name");
 
+            // 1. 대기열(pool)에서 드래그하여 슬롯에 떨어뜨릴 때
             if (type === "pool") {
                 const existingName = teams[targetTeamId][targetSlotIndex];
                 teams[targetTeamId][targetSlotIndex] = name;
@@ -448,7 +464,9 @@
                 if (existingName) {
                     members.push({ name: existingName, selected: true });
                 }
-            } else if (type === "slot") {
+            } 
+            // 2. 다른 슬롯(slot)에서 드래그하여 떨어뜨릴 때 (서로 자리 바꾸기)
+            else if (type === "slot") {
                 const sourceTeam = ev.dataTransfer.getData("sourceTeam");
                 const sourceIndex = ev.dataTransfer.getData("sourceIndex");
 
@@ -459,29 +477,13 @@
             updateState();
         }
 
-        document.addEventListener('dragstart', (e) => {
-            if (e.target.classList.contains('team-slot') || e.target.closest('.team-slot')) {
-                const slot = e.target.closest('.team-slot');
-                const input = slot.querySelector('.slot-input');
-                if (input && input.value) {
-                    const teamDiv = slot.closest('.team');
-                    const teamId = teamDiv.id === 'team1' ? 1 : 2;
-                    const allSlots = Array.from(teamDiv.querySelectorAll('.team-slot'));
-                    const slotIndex = allSlots.indexOf(slot);
-
-                    e.dataTransfer.setData("type", "slot");
-                    e.dataTransfer.setData("sourceTeam", teamId);
-                    e.dataTransfer.setData("sourceIndex", slotIndex);
-                    e.dataTransfer.setData("name", input.value);
-                }
-            }
-        });
-
         function dropToPool(ev) {
             ev.preventDefault();
             ev.currentTarget.classList.remove('drag-over');
 
             const type = ev.dataTransfer.getData("type");
+            
+            // 팀 슬롯에 있는 인원을 대기열(pool)로 떨어뜨렸을 때
             if (type === "slot") {
                 const sourceTeam = ev.dataTransfer.getData("sourceTeam");
                 const sourceIndex = ev.dataTransfer.getData("sourceIndex");
