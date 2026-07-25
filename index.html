@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>팀원 정하기 - 디스코드 테마</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'gg sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #313338; color: #dbdee1; display: flex;
+            justify-content: center; padding: 40px 20px; min-height: 100vh;
+        }
+        .app-container {
+            background-color: #2b2d31; width: 100%; max-width: 800px;
+            border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            padding: 30px; display: flex; flex-direction: column;
+        }
+        .top-controls { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px; }
+        .control-btn {
+            background-color: #4e5058; color: #dbdee1; border: none; padding: 6px 12px;
+            border-radius: 3px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background-color 0.2s;
+        }
+        .control-btn:hover { background-color: #6d6f78; }
+        
+        h1 {
+            font-size: 1.5rem; font-weight: bold; color: #f2f3f5; margin-bottom: 20px;
+            text-align: left; border-bottom: 1px solid #1e1f22; padding-bottom: 15px;
+        }
+        
+        .input-section { display: flex; gap: 15px; margin-bottom: 25px; width: 100%; position: relative; }
+        .input-wrapper { flex-grow: 1; position: relative; }
+        .input-section input {
+            width: 100%; padding: 10px 15px; font-size: 15px; background-color: #1e1f22;
+            color: #dbdee1; border: none; border-radius: 4px; outline: none;
+        }
+        .input-section button {
+            padding: 0 20px; font-size: 14px; font-weight: 500; color: white;
+            background-color: #5865F2; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;
+        }
+        .input-section button:hover { background-color: #4752c4; }
+        
+        /* 대기열 리스트 (드롭 존 기능 포함) */
+        .member-list {
+            display: flex; flex-wrap: wrap; gap: 8px; width: 100%; margin-bottom: 30px;
+            min-height: 50px; background-color: #232428; padding: 15px; border-radius: 8px;
+            border: 2px dashed transparent; transition: 0.2s;
+        }
+        .member-list.drag-over { border-color: #5865F2; background-color: rgba(88, 101, 242, 0.1); }
+        
+        .member-badge {
+            padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;
+            cursor: grab; user-select: none; display: flex; align-items: center;
+        }
+        .member-badge:active { cursor: grabbing; }
+        .member-badge::before {
+            content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px;
+        }
+        .member-badge.selected { background-color: rgba(88, 101, 242, 0.15); color: #c9cdfb; }
+        .member-badge.selected::before { background-color: #5865F2; }
+        .member-badge:not(.selected) { background-color: transparent; color: #80848e; text-decoration: line-through; }
+        .member-badge:not(.selected)::before { background-color: #80848e; }
+        
+        .teams-container { display: flex; flex-direction: column; gap: 20px; width: 100%; margin-bottom: 20px; }
+        @media (min-width: 600px) { .teams-container { flex-direction: row; } }
+        .team { flex: 1; background-color: #2b2d31; }
+        .team h2 {
+            font-size: 1rem; font-weight: bold; color: #949ba4; margin-bottom: 10px;
+            display: flex; align-items: center; text-transform: uppercase;
+        }
+        .team h2::before { content: '🔊'; margin-right: 5px; font-size: 1.1rem; }
+        
+        .team-slot { 
+            display: flex; align-items: center; padding: 6px 8px; border-radius: 4px; 
+            margin-bottom: 2px; font-size: 0.95rem; border: 1px dashed transparent; transition: 0.2s;
+        }
+        .team-slot.drag-over { background-color: rgba(88, 101, 242, 0.2); border-color: #5865F2; }
+        .team-slot:hover { background-color: #35373c; }
+        
+        /* 아바타 클릭 시 커서 포인터 변경 */
+        .team-slot .avatar { 
+            width: 24px; height: 24px; border-radius: 50%; background-color: #4e5058; 
+            margin-right: 10px; flex-shrink: 0; transition: background-color 0.2s; cursor: pointer; 
+        }
+        .team-slot .avatar:hover { filter: brightness(1.2); }
+        
+        .slot-input {
+            flex-grow: 1; background: transparent; border: none; color: #dbdee1;
+            font-size: 0.95rem; outline: none; padding: 2px 4px; border-radius: 3px; font-family: inherit;
+        }
+        .slot-input:focus { background-color: #1e1f22; }
+        .slot-input::placeholder { color: #5c5e66; font-style: italic; }
+        .team-slot.has-value .avatar { background-color: #5865F2; }
+        
+        .btn-group { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        
+        .action-btn {
+            width: 100%; padding: 12px; font-size: 1rem; font-weight: 500; color: white;
+            background-color: #248046; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;
+        }
+        .action-btn:hover { background-color: #1a6334; }
+
+        .reset-btn {
+            width: 100%; padding: 10px; font-size: 0.95rem; font-weight: 500; color: #dbdee1;
+            background-color: #4e5058; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;
+        }
+        .reset-btn:hover { background-color: #6d6f78; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="top-controls">
+            <button class="control-btn" onclick="pasteData()">코드 붙여넣기</button>
+            <button class="control-btn" onclick="copyData()">코드 복사</button>
+        </div>
+        <h1>팀 편성 (음성 채널)</h1>
+        <div class="input-section">
+            <div class="input-wrapper">
+                <input type="text" id="nameInput" placeholder="멤버 추가하기 (최대 20명)" onkeypress="handleKeyPress(event)">
+            </div>
+            <button onclick="handleMainAdd()">추가</button>
+        </div>
+        
+        <!-- 대기열 리스트 (드롭 존 지정: 대기열로 돌려보내기) -->
+        <div class="member-list" id="memberList" ondragover="allowDrop(event)" ondragleave="dragLeaveList(event)" ondrop="dropToPool(event)"></div>
+        
+        <div class="teams-container">
+            <!-- 팀 A -->
+            <div class="team" id="team1">
+                <h2>팀 A</h2>
+                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 1, 0)">
+                    <div class="avatar" onclick="clearSlot(1, 0)" title="클릭 시 대기열로 복귀"></div>
+                    <input type="text" class="slot-input" id="t1-s0" placeholder="비어 있음" onchange="handleSlotChange(1, 0, this.value)">
+                </div>
+                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 1, 1)">
+                    <div class="avatar" onclick="clearSlot(1, 1)" title="클릭 시 대기열로 복귀"></div>
+                    <input type="text" class="slot-input" id="t1-s1" placeholder="비어 있음" onchange="handleSlotChange(1, 1, this.value)">
+                </div>
+                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 1, 2)">
+                    <div class="avatar" onclick="clearSlot(1, 2)" title="클릭 시 대기열로 복귀"></div>
+                    <input type="text" class="slot-input" id="t1-s2" placeholder="비어 있음" onchange="handleSlotChange(1, 2, this.value)">
+                </div>
+                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 1, 3)">
+                    <div class="avatar" onclick="clearSlot(1, 3)" title="클릭 시 대기열로 복귀"></div>
+                    <input type="text" class="slot-input" id="t1-s3" placeholder="비어 있음" onchange="handleSlotChange(1, 3, this.value)">
+                </div>
+                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 1, 4)">
+                    <div class="avatar" onclick="clearSlot(1, 4)" title="클릭 시 대기열로 복귀"></div>
+                    <input type="text" class="slot-input" id="t1-s4" placeholder="비어 있음" onchange="handleSlotChange(1, 4, this.value)">
+                </div>
+            </div>
+
+            <!-- 팀 B -->
+            <div class="team" id="team2">
+                <h2>팀 B</h2>
+                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 2, 0)">
+                    <div class="avatar" onclick="clearSlot(2, 0)" title="클릭 시 대기열로 복귀"></div>
+                    <input type="text" class="slot-input" id="t2-s0" placeholder="비어 있음" onchange="handleSlotChange(2, 0, this.value)">
+                </div>
+                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 2, 1)">
+                    <div class="avatar" onclick="clearSlot(2, 1)" title="클릭 시 대기열로 복귀"></div>
+                    <input type="text" class="slot-input" id="t2-s1" placeholder="비어 있음" onchange="handleSlotChange(2, 1, this.value)">
+                </div>
+                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 2, 2)">
+                    <div class="avatar" onclick="clearSlot(2, 2)" title="클릭 시 대기열로 복귀"></div>
+                    <input type="text" class="slot-input" id="t2-s2" placeholder="비어 있음" onchange="handleSlotChange(2, 2, this.value)">
+                </div>
+                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 2, 3)">
+                    <div class="avatar" onclick="clearSlot(2, 3)" title="클릭 시 대기열로 복귀"></div>
+                    <input type="text" class="slot-input" id="t2-s3" placeholder="비어 있음" onchange="handleSlotChange(2, 3, this.value)">
+                </div>
+                <div class="team-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 2, 4)">
+                    <div class="avatar" onclick="clearSlot(2, 4)" title="클릭 시 대기열로 복귀"></div>
+                    <input type="text" class="slot-input" id="t2-s4" placeholder="비어 있음" onchange="handleSlotChange(2, 4, this.value)">
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn" onclick="assignTeams()">팀 섞기 (선택된 인원 랜덤 배정)</button>
+            <button class="reset-btn" onclick="resetAll()">전체 선택 취소 및 대기열 복귀</button>
+        </div>
+    </div>
+
+    <script>
+        let members = [];
+        let teams = {
+            1: ['', '', '', '', ''],
+            2: ['', '', '', '', '']
+        };
+        const MAX_MEMBERS = 20;
+
+        window.onload = () => { loadFromURL(); };
+
+        function handleKeyPress(event) { if (event.key === 'Enter') handleMainAdd(); }
+
+        function addMemberCheck(name) {
+            if (!name) return false;
+            // 이미 대기열이나 팀에 존재하는지 확인
+            let inTeams = false;
+            for (let t in teams) {
+                if (teams[t].includes(name)) inTeams = true;
+            }
+            if (members.some(m => m.name === name) || inTeams) {
+                alert(`'${name}'(은)는 이미 등록된 이름입니다.`);
+                return false;
+            }
+            if (members.length + countAssignedMembers() >= MAX_MEMBERS) {
+                alert(`최대 ${MAX_MEMBERS}명까지만 추가할 수 있습니다.`);
+                return false;
+            }
+            return true;
+        }
+
+        function countAssignedMembers() {
+            let count = 0;
+            for (let t in teams) {
+                count += teams[t].filter(n => n !== "").length;
+            }
+            return count;
+        }
+
+        function handleMainAdd() {
+            const input = document.getElementById('nameInput');
+            const name = input.value.trim();
+
+            if (addMemberCheck(name)) {
+                const totalCount = members.length + countAssignedMembers();
+                const isSelected = totalCount < 10;
+                members.push({ name: name, selected: isSelected });
+                input.value = '';
+                input.focus();
+                updateState();
+            }
+        }
+
+        // 슬롯 직접 입력 처리
+        function handleSlotChange(teamId, slotIndex, newValue) {
+            newValue = newValue.trim();
+            const oldValue = teams[teamId][slotIndex];
+
+            if (newValue === oldValue) return;
+
+            if (newValue === "") {
+                teams[teamId][slotIndex] = "";
+                updateState();
+                return;
+            }
+
+            // 중복 이름 체크
+            let existsElsewhere = false;
+            if (members.some(m => m.name === newValue)) existsElsewhere = true;
+            for (let t in teams) {
+                for (let i = 0; i < 5; i++) {
+                    if (teams[t][i] === newValue) existsElsewhere = true;
+                }
+            }
+
+            if (existsElsewhere) {
+                alert(`'${newValue}'(은)는 이미 존재하는 이름입니다.`);
+                document.getElementById(`t${teamId}-s${slotIndex}`).value = oldValue;
+                return;
+            }
+
+            // 만약 대기열 리스트에 있던 이름이라면 리스트에서 제거 후 슬롯에 넣기
+            members = members.filter(m => m.name !== newValue);
+
+            teams[teamId][slotIndex] = newValue;
+            updateState();
+        }
+
+        // 아바타 클릭 시 해당 인원을 대기열로 복귀
+        function clearSlot(teamId, slotIndex) {
+            const name = teams[teamId][slotIndex];
+            if (!name) return;
+
+            teams[teamId][slotIndex] = "";
+            // 다시 대기열 맨 뒤에 추가 (기본 선택 상태 부여)
+            members.push({ name: name, selected: true });
+            updateState();
+        }
+
+        function toggleMember(index) {
+            members[index].selected = !members[index].selected;
+            updateState();
+        }
+
+        function renderMembers() {
+            const listDiv = document.getElementById('memberList');
+            listDiv.innerHTML = '';
+            members.forEach((member, index) => {
+                const badge = document.createElement('div');
+                badge.className = `member-badge ${member.selected ? 'selected' : ''}`;
+                badge.textContent = member.name;
+                badge.onclick = () => toggleMember(index);
+                
+                badge.draggable = true;
+                badge.ondragstart = (e) => {
+                    e.dataTransfer.setData("type", "pool");
+                    e.dataTransfer.setData("name", member.name);
+                };
+                
+                listDiv.appendChild(badge);
+            });
+        }
+
+        function renderTeams() {
+            for (let t in teams) {
+                for (let i = 0; i < 5; i++) {
+                    const slotInput = document.getElementById(`t${t}-s${i}`);
+                    const slotContainer = slotInput.parentElement;
+                    const val = teams[t][i];
+                    
+                    slotInput.value = val;
+                    if (val !== "") {
+                        slotContainer.classList.add('has-value');
+                    } else {
+                        slotContainer.classList.remove('has-value');
+                    }
+                }
+            }
+        }
+
+        // 팀 섞기 버튼: 선택된 인원을 랜덤 배정하고 대기열에서 삭제
+        function assignTeams() {
+            let activeMembers = members.filter(m => m.selected).map(m => m.name);
+            
+            if (activeMembers.length === 0) {
+                alert("선택된 인원이 없습니다.");
+                return;
+            }
+
+            if (activeMembers.length > 10) {
+                activeMembers = shuffleArray(activeMembers).slice(0, 10);
+            } else {
+                activeMembers = shuffleArray(activeMembers);
+            }
+            
+            teams[1] = ['', '', '', '', ''];
+            teams[2] = ['', '', '', '', ''];
+
+            activeMembers.forEach((name, index) => {
+                const targetTeam = (index % 2 === 0) ? 1 : 2;
+                const backupTeam = (targetTeam === 1) ? 2 : 1;
+                
+                let placed = false;
+                for (let i = 0; i < 5; i++) {
+                    if (teams[targetTeam][i] === "") {
+                        teams[targetTeam][i] = name;
+                        placed = true;
+                        break;
+                    }
+                }
+                if (!placed) {
+                    for (let i = 0; i < 5; i++) {
+                        if (teams[backupTeam][i] === "") {
+                            teams[backupTeam][i] = name;
+                            break;
+                        }
+                    }
+                }
+            });
+
+            // 배정된 인원들은 대기열(members)에서 제거
+            members = members.filter(m => !activeMembers.includes(m.name));
+
+            updateState();
+        }
+
+        // 전체 선택 취소 및 팀원 모두 대기열 복귀
+        function resetAll() {
+            // 팀에 있는 모든 인원 수집
+            let allAssigned = [];
+            for (let t in teams) {
+                teams[t].forEach(name => {
+                    if (name !== "") allAssigned.push(name);
+                });
+                teams[t] = ['', '', '', '', ''];
+            }
+
+            // 대기열에 있던 인원들과 합치기
+            allAssigned.forEach(name => {
+                members.push({ name: name, selected: true });
+            });
+
+            // 모든 멤버 선택 해제
+            members.forEach(m => m.selected = false);
+
+            updateState();
+        }
+
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // ---------- 드래그 앤 드롭 시스템 ----------
+        function allowDrop(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.add('drag-over');
+        }
+
+        function dragLeave(ev) {
+            ev.currentTarget.classList.remove('drag-over');
+        }
+
+        function dragLeaveList(ev) {
+            ev.currentTarget.classList.remove('drag-over');
+        }
+
+        // 대기열 뱃지를 팀 슬롯에 드랍했을 때
+        // 팀 슬롯에 이미 사람이 있다면 자리를 바꿈(스왑), 없으면 해당 칸에 넣고 대기열에서 제거
+        function drop(ev, targetTeamId, targetSlotIndex) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('drag-over');
+            
+            const type = ev.dataTransfer.getData("type");
+            const name = ev.dataTransfer.getData("name");
+
+            if (type === "pool") {
+                // 대기열에서 팀으로 이동
+                const existingName = teams[targetTeamId][targetSlotIndex];
+                teams[targetTeamId][targetSlotIndex] = name;
+                members = members.filter(m => m.name !== name);
+
+                if (existingName) {
+                    members.push({ name: existingName, selected: true });
+                }
+            } else if (type === "slot") {
+                // 팀 간 이동 또는 스왑
+                const sourceTeam = ev.dataTransfer.getData("sourceTeam");
+                const sourceIndex = ev.dataTransfer.getData("sourceIndex");
+
+                const temp = teams[targetTeamId][targetSlotIndex];
+                teams[targetTeamId][targetSlotIndex] = teams[sourceTeam][sourceIndex];
+                teams[sourceTeam][sourceIndex] = temp;
+            }
+            updateState();
+        }
+
+        // 팀 슬롯의 아바타나 내용을 대기열(pool)로 드래그 시작할 때
+        document.addEventListener('dragstart', (e) => {
+            if (e.target.classList.contains('team-slot') || e.target.closest('.team-slot')) {
+                const slot = e.target.closest('.team-slot');
+                const input = slot.querySelector('.slot-input');
+                if (input && input.value) {
+                    // 어떤 팀의 몇 번째 슬롯인지 부모 ID로 역추적
+                    const teamDiv = slot.closest('.team');
+                    const teamId = teamDiv.id === 'team1' ? 1 : 2;
+                    const allSlots = Array.from(teamDiv.querySelectorAll('.team-slot'));
+                    const slotIndex = allSlots.indexOf(slot);
+
+                    e.dataTransfer.setData("type", "slot");
+                    e.dataTransfer.setData("sourceTeam", teamId);
+                    e.dataTransfer.setData("sourceIndex", slotIndex);
+                    e.dataTransfer.setData("name", input.value);
+                }
+            }
+        });
+
+        // 팀 슬롯에서 대기열(pool) 영역으로 드랍했을 때 (대기열로 돌려보내기)
+        function dropToPool(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('drag-over');
+
+            const type = ev.dataTransfer.getData("type");
+            if (type === "slot") {
+                const sourceTeam = ev.dataTransfer.getData("sourceTeam");
+                const sourceIndex = ev.dataTransfer.getData("sourceIndex");
+                const name = teams[sourceTeam][sourceIndex];
+
+                if (name) {
+                    teams[sourceTeam][sourceIndex] = "";
+                    members.push({ name: name, selected: true });
+                    updateState();
+                }
+            }
+        }
+        // ----------------------------------------
+
+        function updateState() {
+            renderMembers();
+            renderTeams();
+            
+            const saveData = {
+                m: members.map(m => ({ n: m.name, s: m.selected ? 1 : 0 })),
+                t1: teams[1],
+                t2: teams[2]
+            };
+            
+            const jsonString = JSON.stringify(saveData);
+            const encodedString = btoa(encodeURIComponent(jsonString));
+            window.history.replaceState(null, null, `#${encodedString}`);
+        }
+
+        function loadFromURL(hashString) {
+            const hash = hashString || window.location.hash.substring(1);
+            if (!hash) {
+                renderMembers();
+                renderTeams();
+                return;
+            }
+            
+            try {
+                const jsonString = decodeURIComponent(atob(hash));
+                const minimalData = JSON.parse(jsonString);
+                
+                if (Array.isArray(minimalData)) {
+                    members = minimalData.map(m => ({ name: m.n, selected: m.s === 1 }));
+                } else {
+                    members = minimalData.m.map(m => ({ name: m.n, selected: m.s === 1 }));
+                    teams[1] = minimalData.t1 || ['', '', '', '', ''];
+                    teams[2] = minimalData.t2 || ['', '', '', '', ''];
+                }
+            } catch (e) {
+                members = [];
+                teams = { 1: ['', '', '', '', ''], 2: ['', '', '', '', ''] };
+            }
+            
+            renderMembers();
+            renderTeams();
+        }
+
+        function copyData() {
+            const hash = window.location.hash.substring(1);
+            if (!hash) {
+                return alert("복사할 데이터가 없습니다.");
+            }
+            
+            navigator.clipboard.writeText(hash).then(() => {
+                alert("불러오기 전용 코드가 복사되었습니다!");
+            }).catch(() => {
+                prompt("복사 기능이 막혀있습니다. 아래 코드를 직접 복사해주세요.", hash);
+            });
+        }
+
+        function pasteData() {
+            const input = prompt("복사해둔 전용 코드를 붙여넣어주세요.");
+            if (!input) return;
+            
+            try {
+                let hash = input.includes('#') ? input.split('#')[1] : input;
+                if (!hash) return alert("유효한 코드가 포함되어 있지 않습니다.");
+                
+                const jsonString = decodeURIComponent(atob(hash));
+                const minimalData = JSON.parse(jsonString);
+                
+                if (minimalData.m) {
+                    members = minimalData.m.map(m => ({ name: m.n, selected: m.s === 1 })).slice(0, MAX_MEMBERS);
+                    teams[1] = minimalData.t1 || ['', '', '', '', ''];
+                    teams[2] = minimalData.t2 || ['', '', '', '', ''];
+                } else if (Array.isArray(minimalData)) {
+                     members = minimalData.map(m => ({ name: m.n, selected: m.s === 1 })).slice(0, MAX_MEMBERS);
+                }
+                
+                updateState();
+                alert("코드를 성공적으로 불러왔습니다.");
+            } catch (error) { 
+                alert("올바르지 않은 코드 형식입니다. 다시 확인해주세요."); 
+            }
+        }
+    </script>
+</body>
+</html>
