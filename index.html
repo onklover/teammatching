@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>팀원섞기</title>
+    <title>팀원 정하기 - 디스코드 테마</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -58,7 +58,7 @@
         /* 대기열 리스트 (높이 고정 및 flex-start 적용) */
         .member-list {
             display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; width: 100%; 
-            margin-bottom: 30px; height: 150px; /* 20명 기준 고정 높이 */
+            margin-bottom: 30px; height: 150px;
             background-color: #232428; padding: 15px; border-radius: 8px;
             border: 2px dashed transparent; transition: 0.2s; overflow-y: auto;
         }
@@ -324,7 +324,17 @@
                 const badge = document.createElement('div');
                 badge.className = `member-badge ${member.selected ? 'selected' : ''}`;
                 badge.textContent = member.name;
+                badge.title = "좌클릭: 선택/해제, 우클릭: 삭제, 드래그: 이동";
+                
+                // 좌클릭: 선택/해제
                 badge.onclick = () => toggleMember(index);
+                
+                // 우클릭: 리스트에서 완전 삭제
+                badge.oncontextmenu = (e) => {
+                    e.preventDefault(); // 브라우저 우클릭 메뉴 방지
+                    members.splice(index, 1);
+                    updateState();
+                };
                 
                 badge.draggable = true;
                 badge.ondragstart = (e) => {
