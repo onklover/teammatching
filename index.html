@@ -344,13 +344,11 @@
                     
                     slotInput.value = val;
 
-                    // 인원이 있을 경우에만 컨테이너를 드래그 가능하게 설정
                     if (val !== "") {
                         slotContainer.classList.add('has-value');
                         slotContainer.draggable = true;
                         
                         slotContainer.ondragstart = (e) => {
-                            // 입력 필드의 텍스트가 드래그되는 것을 방지하고, 슬롯 전체의 데이터를 전송
                             e.dataTransfer.setData("type", "slot");
                             e.dataTransfer.setData("sourceTeam", t);
                             e.dataTransfer.setData("sourceIndex", i);
@@ -417,11 +415,11 @@
                 teams[t] = ['', '', '', '', ''];
             }
 
+            // 팀에서 배정되었다가 돌아온 인원만 '선택됨(selected: true)' 상태로 추가
             allAssigned.forEach(name => {
                 members.push({ name: name, selected: true });
             });
-
-            members.forEach(m => m.selected = false);
+            
             updateState();
         }
 
@@ -455,7 +453,6 @@
             const type = ev.dataTransfer.getData("type");
             const name = ev.dataTransfer.getData("name");
 
-            // 1. 대기열(pool)에서 드래그하여 슬롯에 떨어뜨릴 때
             if (type === "pool") {
                 const existingName = teams[targetTeamId][targetSlotIndex];
                 teams[targetTeamId][targetSlotIndex] = name;
@@ -465,7 +462,6 @@
                     members.push({ name: existingName, selected: true });
                 }
             } 
-            // 2. 다른 슬롯(slot)에서 드래그하여 떨어뜨릴 때 (서로 자리 바꾸기)
             else if (type === "slot") {
                 const sourceTeam = ev.dataTransfer.getData("sourceTeam");
                 const sourceIndex = ev.dataTransfer.getData("sourceIndex");
@@ -483,7 +479,6 @@
 
             const type = ev.dataTransfer.getData("type");
             
-            // 팀 슬롯에 있는 인원을 대기열(pool)로 떨어뜨렸을 때
             if (type === "slot") {
                 const sourceTeam = ev.dataTransfer.getData("sourceTeam");
                 const sourceIndex = ev.dataTransfer.getData("sourceIndex");
