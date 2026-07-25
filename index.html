@@ -55,17 +55,18 @@
         }
         .small-btn:hover { background-color: #6d6f78; }
         
-        /* 대기열 리스트 (드롭 존 기능 포함) */
+        /* 대기열 리스트 (높이 고정 및 flex-start 적용) */
         .member-list {
-            display: flex; flex-wrap: wrap; gap: 8px; width: 100%; margin-bottom: 30px;
-            min-height: 50px; background-color: #232428; padding: 15px; border-radius: 8px;
-            border: 2px dashed transparent; transition: 0.2s;
+            display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; width: 100%; 
+            margin-bottom: 30px; height: 150px; /* 20명 기준 고정 높이 */
+            background-color: #232428; padding: 15px; border-radius: 8px;
+            border: 2px dashed transparent; transition: 0.2s; overflow-y: auto;
         }
         .member-list.drag-over { border-color: #5865F2; background-color: rgba(88, 101, 242, 0.1); }
         
         .member-badge {
             padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;
-            cursor: grab; user-select: none; display: flex; align-items: center;
+            cursor: grab; user-select: none; display: flex; align-items: center; height: fit-content;
         }
         .member-badge:active { cursor: grabbing; }
         .member-badge::before {
@@ -102,7 +103,7 @@
         }
         .team-slot .avatar:hover { filter: brightness(1.2); }
         
-        /* 인풋 사이즈 단축 (flex-grow 제거, 고정 width 부여) */
+        /* 인풋 사이즈 단축 */
         .slot-input {
             width: 140px; background: transparent; border: none; color: #dbdee1;
             font-size: 0.95rem; outline: none; padding: 2px 4px; border-radius: 3px; font-family: inherit;
@@ -415,7 +416,6 @@
                 teams[t] = ['', '', '', '', ''];
             }
 
-            // 팀에서 배정되었다가 돌아온 인원만 '선택됨(selected: true)' 상태로 추가
             allAssigned.forEach(name => {
                 members.push({ name: name, selected: true });
             });
